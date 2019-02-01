@@ -18,24 +18,26 @@
                     </div>
                 </template>
                 <div v-else>
-                    <el-message-box
+                    <el-dialog
                         :title="'设置昵称'"
-                        :showInput="true"
                         :center="true"
-                    />
+                    >
+                        <input type="text" placeholder="设置你的昵称" v-model="setName">
+                    </el-dialog>
                     <input type="text" v-model="setName" @keyup.enter="setNickName">
                     <button @click="setNickName" placeholder="设置昵称">设置昵称</button>
                 </div>
             </div>
         </div>
         <footer>输入框</footer>
-
     </div>
 </template>
 
 <script>
+// import { Dialog } from 'element-ui';
+
 const io = require('socket.io-client');
-// 为什么这种方式没有导入io
+// 为什么这种方式没有导入io why
 // import * as io from 'socket.io-client';
 const socket = io();
 
@@ -82,7 +84,7 @@ export default {
             this.input = '';
         },
 
-        // 输入处理 todo
+        // 输入处理 不要用ws Todo
         setNickName() {
             const { setName } = this;
             if (!setName) {

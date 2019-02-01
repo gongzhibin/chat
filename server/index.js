@@ -3,10 +3,12 @@ const path = require('path');
 const history = require('connect-history-api-fallback');
 
 const app = express();
-app.use(express.static(path.resolve('dist')));
+// user hits the refresh button or is directly accessing a page other than the landing page on history mode
 app.use(history({
-    index: '/index.html'
-}));
+    index: 'index.html'
+  })
+);
+app.use(express.static(path.resolve('dist')));
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);

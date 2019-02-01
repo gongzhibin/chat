@@ -67,6 +67,12 @@ module.exports = {
                         name: 'name.[hash:6].[ext]'
                     }
                 }
+            },
+            {
+                test: /\.(ttf|woff)$/, 
+                use: {
+                    loader: "file-loader"
+                }
             }
         ]
     },
