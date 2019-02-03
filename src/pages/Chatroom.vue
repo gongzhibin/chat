@@ -6,36 +6,39 @@
             <div class="message">
                 <template v-if="isLog">
                     <div v-for="(item,index) in items" :key="index">
-                        <div>
-                            <span v-if="item.name">{{item.name}}: </span>
-                            <span>{{item.msg}}</span>
-                        </div>
-                    </div>
-
-                    <div>
-                        <input type="text" v-model="input" @keyup.enter="sendMsg" placeholder="发送信息">
-                        <button @click="sendMsg">发送</button>
+                        <span v-if="item.name">{{item.name}}: </span>
+                        <span>{{item.msg}}</span>
                     </div>
                 </template>
                 <div v-else>
-                    <el-dialog
-                        :title="'设置昵称'"
-                        :center="true"
-                    >
-                        <input type="text" placeholder="设置你的昵称" v-model="setName">
-                    </el-dialog>
-                    <input type="text" v-model="setName" @keyup.enter="setNickName">
-                    <button @click="setNickName" placeholder="设置昵称">设置昵称</button>
+                    <button @click="isShowDialog=true">设置昵称</button>
+                    <!-- <input type="text" v-model="setName" @keyup.enter="setNickName">
+                    <button @click="setNickName" placeholder="设置昵称">设置昵称</button> -->
                 </div>
             </div>
         </div>
-        <footer>输入框</footer>
+        <footer class="footer">
+            <input type="text" v-model="input" @keyup.enter="sendMsg" placeholder="发送信息">
+            <button @click="sendMsg">发送</button>
+        </footer>
+
+        <!-- 需要.sync对prop进行“双向绑定” -->
+        <el-dialog
+            :visible.sync="isShowDialog"
+            :close-on-click-modal="true"
+            title="设置昵称"
+            :center="true"
+        >
+            <input type="text" placeholder="设置你的昵称" v-model="setName" @keyup.enter="setNickName">
+            <div slot="footer" class="dialog-footer">
+                <button @click="isShowDialog=false">取 消</button>
+                <button @click="setNickName">确 定</button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script>
-// import { Dialog } from 'element-ui';
-
 const io = require('socket.io-client');
 // 为什么这种方式没有导入io why
 // import * as io from 'socket.io-client';
@@ -47,6 +50,7 @@ export default {
     data() {
         return {
             isLog: false,
+            isShowDialog: false,
             setName: '',
             nickName: '',
             items: [],
@@ -69,6 +73,10 @@ export default {
 
         // 输入处理 todo
         sendMsg() {
+            if(!this.isLog){
+                this.isShowDialog = true;
+                return;
+            }
             const { input, oldInput } = this;
             if (!input) {
                 console.log('输入为空');
@@ -76,6 +84,7 @@ export default {
             }
 
             if (input === oldInput) {
+                // 弹窗显示
                 console.log('请不要重复输入');
                 return;
             }
@@ -87,12 +96,12 @@ export default {
         // 输入处理 不要用ws Todo
         setNickName() {
             const { setName } = this;
+            this.isShowDialog = false;
             if (!setName) {
                 console.log('输入为空');
                 return;
             }
             socket.emit('setNickName', this.setName);
-            this.nickName = this.setName;
             this.setName = '';
         },
 
@@ -143,5 +152,10 @@ export default {
 
 .message {
     flex: 1;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
 }
 </style>
