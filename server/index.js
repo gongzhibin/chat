@@ -6,24 +6,23 @@ const app = express();
 // user hits the refresh button or is directly accessing a page other than the landing page on history mode
 app.use(history({
     index: 'index.html'
-  })
-);
+}));
 app.use(express.static(path.resolve('dist')));
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-let nickNameList = new Set([]);
+const nickNameList = {};
 
 io.on('connection', (socket) => {
     let nickName = '';
     socket.on('setNickName', (name) => {
         nickName = name;
-        if (nickNameList.has(nickName)) {
-            socket.emit('logIn', { status: false });
+        if (nickNameList[nickName]) {
+            io.emit('logIn', { status: false });
         } else {
-            nickNameList.add(nickName);
-            socket.emit('logIn',  { status: true, nickName });
+            nickNameList[nickName] = 'online';
+            io.emit('logIn',  { status: true, nickName, nickNameList });
             socket.broadcast.emit('userLogIn', nickName);
         }
     });
@@ -32,7 +31,8 @@ io.on('connection', (socket) => {
         io.emit('receiveMsg', { name: nickName, msg });
     });
     socket.on('disconnect', () => {
-        io.emit('userLogout', nickName);
+        nickNameList[nickName] = 'offline';
+        io.emit('userLogout', nickName, nickNameList);
     });
 });
 

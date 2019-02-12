@@ -2,7 +2,12 @@
     <div>
         <header >Your Chatroom</header>
         <div class="main">
-            <div class="aside">在线人员</div>
+            <div class="aside">
+                <div class="aside-header">在线人员({{showNum}})</div>
+                <div v-for="(value, key) in nickNameList" :key="value">
+                    <p>{{key}}: {{value}}</p>
+                </div>
+            </div>
             <div class="message">
                 <template v-if="isLog">
                     <div v-for="(item,index) in items" :key="index">
@@ -53,6 +58,7 @@ export default {
             isShowDialog: false,
             setName: '',
             nickName: '',
+            nickNameList: () => ({}),
             items: [],
             input: '',
             lastInput: ''
@@ -61,6 +67,19 @@ export default {
 
     mounted() {
         this.init();
+    },
+
+    computed: {
+        showNum() {
+            const { nickNameList } = this;
+            let sum = 0;
+            let onlineNum = 0;
+            for (let nickName in nickNameList) {
+                sum++;
+                if (nickNameList[nickName] === 'online') onlineNum++;
+            }
+            return `${onlineNum}/${sum}`;
+        }
     },
 
     methods: {
@@ -73,7 +92,7 @@ export default {
 
         // 输入处理 todo
         sendMsg() {
-            if(!this.isLog){
+            if (!this.isLog) {
                 this.isShowDialog = true;
                 return;
             }
@@ -119,20 +138,22 @@ export default {
         },
 
         onUserLogOut() {
-            socket.on('userLogOut', (nickName) => {
+            socket.on('userLogout', (nickName, nickNameList) => {
                 const attention = { msg: `${nickName} go out` };
                 this.items.push(attention);
+                this.nickNameList = nickNameList;
             });
         },
 
         onLogIn() {
-            socket.on('logIn', ({ status, nickName }) => {
+            socket.on('logIn', ({ status, nickName, nickNameList }) => {
                 if (!status) {
                     console.log('设置昵称重复，请重新输入');
                     return;
                 }
 
                 this.nickName = nickName;
+                this.nickNameList = nickNameList;
                 this.isLog = true;
             });
         }
